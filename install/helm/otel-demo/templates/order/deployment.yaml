@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "otel-demo.order.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.order.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.order.autoscaling.enabled }}
+  replicas: {{ .Values.order.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "otel-demo.order.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.order.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "otel-demo.order.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.order.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "otel-demo.order.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.order.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "otel-demo.order.name" . }}
+          securityContext:
+            {{- toYaml .Values.order.securityContext | nindent 12 }}
+          image: "{{ .Values.order.image.repository }}:{{ .Values.order.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.order.image.pullPolicy }}
+          command:
+          - order
+          {{- with .Values.order.extraArgs }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: SQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mysql-root-password
+                  name: {{ .Release.Name}}-mysql
+            - name: "ORDER_ADDR"
+              value: "0.0.0.0:{{ .Values.order.service.port }}"
+            - name: "USER_URL"
+              value: "http://{{ include "otel-demo.users.name" . }}:{{ .Values.users.service.port }}"
+          {{- with (concat .Values.global.env .Values.order.extraEnv) }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.order.service.port }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          resources:
+            {{- toYaml .Values.order.resources | nindent 12 }}
+      {{- with .Values.order.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.order.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.order.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

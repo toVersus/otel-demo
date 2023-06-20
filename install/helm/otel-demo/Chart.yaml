@@ -1,0 +1,11 @@
+apiVersion: v2
+name: otel-demo
+description: A Helm chart for OpenTelemetry Context Demo
+type: application
+version: 0.1.0
+appVersion: "v0.1.0"
+dependencies:
+- name: mysql
+  version: 9.10.4
+  repository: https://charts.bitnami.com/bitnami
+  condition: mysql.enabled

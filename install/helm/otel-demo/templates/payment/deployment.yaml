@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "otel-demo.payment.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.payment.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.payment.autoscaling.enabled }}
+  replicas: {{ .Values.payment.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "otel-demo.payment.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.payment.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "otel-demo.payment.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.payment.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "otel-demo.payment.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.payment.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "otel-demo.payment.name" . }}
+          securityContext:
+            {{- toYaml .Values.payment.securityContext | nindent 12 }}
+          image: "{{ .Values.payment.image.repository }}:{{ .Values.payment.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.payment.image.pullPolicy }}
+          command:
+          - payment
+          {{- with .Values.payment.extraArgs }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: "PAYMENT_ADDR"
+              value: "0.0.0.0:{{ .Values.payment.service.port }}"
+            - name: "USER_URL"
+              value: "http://{{ include "otel-demo.users.name" . }}:{{ .Values.users.service.port }}"
+          {{- with (concat .Values.global.env .Values.payment.extraEnv) }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.payment.service.port }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          resources:
+            {{- toYaml .Values.payment.resources | nindent 12 }}
+      {{- with .Values.payment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.payment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.payment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

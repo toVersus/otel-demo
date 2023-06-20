@@ -1,0 +1,62 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    # tty: true
+    cap_add:
+      - SYS_NICE
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    ports:
+      - "3306:3306"
+  frontend:
+    image: toversus/otel-demo:frontend
+    restart: unless-stopped
+    ports:
+      - "8088:80"
+    environment:
+      - REACT_APP_USER_URL=http://user:8080
+      - REACT_APP_PAYMENT_URL=http://payment:8081
+      - REACT_APP_ORDER_URL=http://order:8082
+    depends_on:
+      - user
+      - payment
+      - order
+  user:
+    image: toversus/otel-demo:backend
+    command: users
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - USER_ADDR=0.0.0.0:8080
+      - SQL_USER=root
+      - SQL_HOST=mysql:3306
+      - SQL_DB=demo
+    depends_on:
+      - mysql
+  payment:
+    image: toversus/otel-demo:backend
+    command: payment
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - USER_URL=http://user:8080
+      - PAYMENT_ADDR=0.0.0.0:8081
+    depends_on:
+      - mysql
+  order:
+    image: toversus/otel-demo:backend
+    command: order
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      - USER_URL=http://user:8080
+      - ORDER_ADDR=0.0.0.0:8082
+      - SQL_USER=root
+      - SQL_HOST=mysql:3306
+      - SQL_DB=demo
+    depends_on:
+      - mysql

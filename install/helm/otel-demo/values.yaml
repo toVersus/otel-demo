@@ -1,0 +1,295 @@
+nameOverride: ""
+fullnameOverride: ""
+
+global:
+  # -- Environment variables to pass to all deployed Deployments
+  env: []
+  # - name: "MY_VAR"
+  #   value: "value"
+
+frontend:
+  replicaCount: 1
+
+  usersUrl: "http://198.19.195.253:{{ .Values.users.service.port }}"
+  paymentUrl: "http://198.19.195.252:{{ .Values.payment.service.port }}"
+  orderUrl: "http://198.19.195.251:{{ .Values.order.service.port }}"
+
+  image:
+    repository: ghcr.io/toversus/otel-demo
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: frontend
+
+  imagePullSecrets: []
+
+  # -- Environment variables to pass to the ApplicationSet controller
+  extraEnv: []
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+  # fsGroup: 2000
+
+  securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+  service:
+    type: LoadBalancer
+    port: 8088
+
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+order:
+  replicaCount: 1
+
+  image:
+    repository: ghcr.io/toversus/otel-demo
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: backend
+
+  imagePullSecrets: []
+
+  extraArgs: []
+  # -- Environment variables to pass to the ApplicationSet controller
+  extraEnv:
+  - name: "SQL_USER"
+    value: "root"
+  - name: "SQL_HOST"
+    value: "otel-demo-mysql-headless:3306"
+  - name: "SQL_DB"
+    value: "demo"
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+  # fsGroup: 2000
+
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  service:
+    type: LoadBalancer
+    port: 8082
+
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+payment:
+  replicaCount: 1
+
+  image:
+    repository: ghcr.io/toversus/otel-demo
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: backend
+
+  imagePullSecrets: []
+
+  extraArgs: []
+  # -- Environment variables to pass to the ApplicationSet controller
+  extraEnv: []
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+  # fsGroup: 2000
+
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  service:
+    type: LoadBalancer
+    port: 8081
+
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+users:
+  replicaCount: 1
+
+  image:
+    repository: ghcr.io/toversus/otel-demo
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: backend
+
+  imagePullSecrets: []
+
+  extraArgs: []
+  # -- Environment variables to pass to the ApplicationSet controller
+  extraEnv:
+  - name: "SQL_USER"
+    value: "root"
+  - name: "SQL_HOST"
+    value: "otel-demo-mysql-headless:3306"
+  - name: "SQL_DB"
+    value: "demo"
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+  # fsGroup: 2000
+
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  service:
+    type: LoadBalancer
+    port: 8080
+
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+mysql:
+  enabled: true
+
+  auth:
+    rootPassword: rootpassword
+    createDatabase: true
+    database: "demo"

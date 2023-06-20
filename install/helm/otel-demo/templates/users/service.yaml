@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "otel-demo.users.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.users.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.users.service.type }}
+  ports:
+    - port: {{ .Values.users.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "otel-demo.users.selectorLabels" . | nindent 4 }}

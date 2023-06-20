@@ -1,0 +1,15 @@
+frontend:
+  image:
+    pullPolicy: IfNotPresent
+
+order:
+  image:
+    pullPolicy: IfNotPresent
+
+payment:
+  image:
+    pullPolicy: IfNotPresent
+
+users:
+  image:
+    pullPolicy: IfNotPresent

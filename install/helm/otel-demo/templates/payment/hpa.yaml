@@ -1,0 +1,33 @@
+{{- if .Values.payment.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "otel-demo.payment.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-demo.payment.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "otel-demo.payment.fullname" . }}
+  minReplicas: {{ .Values.payment.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.payment.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.payment.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.payment.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.payment.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.payment.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}
