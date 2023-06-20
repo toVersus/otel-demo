@@ -1,0 +1,21 @@
+{{- if and .Values.global.gateway.enabled .Values.payment.httpRoute.enabled -}}
+kind: HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1beta1
+metadata:
+  name: {{ include "otel-demo.payment.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  parentRefs:
+  - kind: Gateway
+    name: {{ include "otel-demo.fullname" . }}
+  hostnames:
+  {{- toYaml .Values.payment.httpRoute.hostnames | nindent 2 }}
+  rules:
+  - matches:
+    - path:
+        value: /payments
+        type: PathPrefix
+    backendRefs:
+    - name: {{ include "otel-demo.payment.fullname" . }}
+      port: {{ .Values.payment.service.port }}
+{{- end }}

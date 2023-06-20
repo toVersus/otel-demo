@@ -1,0 +1,24 @@
+{{- if and .Values.global.gateway.enabled .Values.frontend.healthcheckPolicy.enabled -}}
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: {{ include "otel-demo.frontend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  default:
+    checkIntervalSec: {{ .Values.frontend.healthcheckPolicy.checkIntervalSec }}
+    timeoutSec: {{ .Values.frontend.healthcheckPolicy.timeoutSec }}
+    healthyThreshold: {{ .Values.frontend.healthcheckPolicy.healthyThreshold }}
+    unhealthyThreshold: {{ .Values.frontend.healthcheckPolicy.unhealthyThreshold }}
+    logConfig:
+      enabled: {{ .Values.frontend.healthcheckPolicy.logConfig.enabled }}
+    config:
+      type: HTTP
+      httpHealthCheck:
+        port: {{ .Values.frontend.service.port }}
+        requestPath: {{ .Values.frontend.healthcheckPolicy.requestPath }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ include "otel-demo.frontend.fullname" . }}
+{{- end }}

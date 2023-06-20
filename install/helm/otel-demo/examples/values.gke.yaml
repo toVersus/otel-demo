@@ -1,0 +1,67 @@
+global:
+  image:
+    pullPolicy: Always
+  gateway:
+    enabled: true
+    gatewayClassName: gke-l7-global-external-managed
+    listeners:
+    - name: http
+      hostname: otel-demo.3-shake.com
+      protocol: HTTP
+      port: 80
+
+frontend:
+  usersUrl: http://otel-demo.3-shake.com
+  paymentUrl: http://otel-demo.3-shake.com
+  orderUrl: http://otel-demo.3-shake.com
+
+  httpRoute:
+    enabled: true
+    hostnames:
+    - otel-demo.3-shake.com
+
+  backendPolicy:
+    enabled: true
+    securityPolicy: ngsw-otel-demo
+
+  healthcheckPolicy:
+    enabled: true
+
+order:
+  httpRoute:
+    enabled: true
+    hostnames:
+    - otel-demo.3-shake.com
+
+  backendPolicy:
+    enabled: true
+    securityPolicy: ngsw-otel-demo
+
+  healthcheckPolicy:
+    enabled: true
+
+payment:
+  httpRoute:
+    enabled: true
+    hostnames:
+    - otel-demo.3-shake.com
+
+  backendPolicy:
+    enabled: true
+    securityPolicy: ngsw-otel-demo
+
+  healthcheckPolicy:
+    enabled: true
+
+users:
+  httpRoute:
+    enabled: true
+    hostnames:
+    - otel-demo.3-shake.com
+
+  backendPolicy:
+    enabled: true
+    securityPolicy: ngsw-otel-demo
+
+  healthcheckPolicy:
+    enabled: true

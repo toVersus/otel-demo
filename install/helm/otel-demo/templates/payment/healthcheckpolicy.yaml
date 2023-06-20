@@ -1,0 +1,24 @@
+{{- if and .Values.global.gateway.enabled .Values.payment.healthcheckPolicy.enabled -}}
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: {{ include "otel-demo.payment.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  default:
+    checkIntervalSec: {{ .Values.payment.healthcheckPolicy.checkIntervalSec }}
+    timeoutSec: {{ .Values.payment.healthcheckPolicy.timeoutSec }}
+    healthyThreshold: {{ .Values.payment.healthcheckPolicy.healthyThreshold }}
+    unhealthyThreshold: {{ .Values.payment.healthcheckPolicy.unhealthyThreshold }}
+    logConfig:
+      enabled: {{ .Values.payment.healthcheckPolicy.logConfig.enabled }}
+    config:
+      type: HTTP
+      httpHealthCheck:
+        port: {{ .Values.payment.service.port }}
+        requestPath: {{ .Values.payment.healthcheckPolicy.requestPath }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ include "otel-demo.payment.fullname" . }}
+{{- end }}

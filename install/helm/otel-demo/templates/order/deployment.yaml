@@ -32,8 +32,8 @@ spec:
         - name: {{ include "otel-demo.order.name" . }}
           securityContext:
             {{- toYaml .Values.order.securityContext | nindent 12 }}
-          image: "{{ .Values.order.image.repository }}:{{ .Values.order.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.order.image.pullPolicy }}
+          image: "{{ .Values.order.image.repository | default .Values.global.image.repository }}:{{ .Values.order.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.order.image.pullPolicy | default .Values.global.image.pullPolicy }}
           command:
           - order
           {{- with .Values.order.extraArgs }}

@@ -1,0 +1,21 @@
+{{- if and .Values.global.gateway.enabled .Values.frontend.httpRoute.enabled -}}
+kind: HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1beta1
+metadata:
+  name: {{ include "otel-demo.frontend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  parentRefs:
+  - kind: Gateway
+    name: {{ include "otel-demo.fullname" . }}
+  hostnames:
+  {{- toYaml .Values.frontend.httpRoute.hostnames | nindent 2 }}
+  rules:
+  - matches:
+    - path:
+        value: /
+        type: PathPrefix
+    backendRefs:
+    - name: {{ include "otel-demo.frontend.fullname" . }}
+      port: {{ .Values.frontend.service.port }}
+{{- end }}

@@ -1,0 +1,21 @@
+{{- if and .Values.global.gateway.enabled .Values.order.httpRoute.enabled -}}
+kind: HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1beta1
+metadata:
+  name: {{ include "otel-demo.order.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  parentRefs:
+  - kind: Gateway
+    name: {{ include "otel-demo.fullname" . }}
+  hostnames:
+  {{- toYaml .Values.order.httpRoute.hostnames | nindent 2 }}
+  rules:
+  - matches:
+    - path:
+        value: /orders
+        type: PathPrefix
+    backendRefs:
+    - name: {{ include "otel-demo.order.fullname" . }}
+      port: {{ .Values.order.service.port }}
+{{- end }}

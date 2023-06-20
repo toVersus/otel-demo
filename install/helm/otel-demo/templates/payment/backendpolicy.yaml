@@ -1,0 +1,14 @@
+{{- if and .Values.global.gateway.enabled .Values.payment.backendPolicy.enabled -}}
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: {{ include "otel-demo.payment.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  default:
+    securityPolicy: {{ .Values.payment.backendPolicy.securityPolicy }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ include "otel-demo.payment.fullname" . }}
+{{- end }}

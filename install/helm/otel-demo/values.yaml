@@ -2,21 +2,32 @@ nameOverride: ""
 fullnameOverride: ""
 
 global:
+  image:
+    repository: ghcr.io/toversus/otel-demo
+    pullPolicy: IfNotPresent
   # -- Environment variables to pass to all deployed Deployments
   env: []
   # - name: "MY_VAR"
   #   value: "value"
 
+  gateway:
+    enabled: false
+    gatewayClassName:
+    listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+
 frontend:
   replicaCount: 1
 
-  usersUrl: "http://198.19.195.253:{{ .Values.users.service.port }}"
-  paymentUrl: "http://198.19.195.252:{{ .Values.payment.service.port }}"
-  orderUrl: "http://198.19.195.251:{{ .Values.order.service.port }}"
+  usersUrl:
+  paymentUrl:
+  orderUrl:
 
   image:
-    repository: ghcr.io/toversus/otel-demo
-    pullPolicy: Always
+    repository:
+    pullPolicy:
     # Overrides the image tag whose default is the chart appVersion.
     tag: frontend
 
@@ -48,8 +59,26 @@ frontend:
   # runAsUser: 1000
 
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 8088
+
+  httpRoute:
+    enabled: false
+    hostnames: []
+
+  backendPolicy:
+    enabled: false
+    securityPolicy:
+
+  healthcheckPolicy:
+    enabled: false
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+    requestPath: /healthz
+    logConfig:
+      enabled: false
 
   resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -80,8 +109,8 @@ order:
   replicaCount: 1
 
   image:
-    repository: ghcr.io/toversus/otel-demo
-    pullPolicy: Always
+    repository:
+    pullPolicy:
     # Overrides the image tag whose default is the chart appVersion.
     tag: backend
 
@@ -120,8 +149,26 @@ order:
     runAsUser: 1000
 
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 8082
+
+  httpRoute:
+    enabled: false
+    hostnames: []
+
+  backendPolicy:
+    enabled: false
+    securityPolicy:
+
+  healthcheckPolicy:
+    enabled: false
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+    requestPath: /healthz
+    logConfig:
+      enabled: false
 
   resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -152,8 +199,8 @@ payment:
   replicaCount: 1
 
   image:
-    repository: ghcr.io/toversus/otel-demo
-    pullPolicy: Always
+    repository:
+    pullPolicy:
     # Overrides the image tag whose default is the chart appVersion.
     tag: backend
 
@@ -186,8 +233,26 @@ payment:
     runAsUser: 1000
 
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 8081
+
+  httpRoute:
+    enabled: false
+    hostnames: []
+
+  backendPolicy:
+    enabled: false
+    securityPolicy:
+
+  healthcheckPolicy:
+    enabled: false
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+    requestPath: /healthz
+    logConfig:
+      enabled: false
 
   resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -218,8 +283,8 @@ users:
   replicaCount: 1
 
   image:
-    repository: ghcr.io/toversus/otel-demo
-    pullPolicy: Always
+    repository:
+    pullPolicy:
     # Overrides the image tag whose default is the chart appVersion.
     tag: backend
 
@@ -258,8 +323,26 @@ users:
     runAsUser: 1000
 
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 8080
+
+  httpRoute:
+    enabled: false
+    hostnames: []
+
+  backendPolicy:
+    enabled: false
+    securityPolicy:
+
+  healthcheckPolicy:
+    enabled: false
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+    requestPath: /healthz
+    logConfig:
+      enabled: false
 
   resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

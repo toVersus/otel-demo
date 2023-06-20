@@ -1,0 +1,11 @@
+{{- if .Values.global.gateway.enabled -}}
+kind: Gateway
+apiVersion: gateway.networking.k8s.io/v1beta1
+metadata:
+  name: {{ include "otel-demo.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  gatewayClassName: {{ .Values.global.gateway.gatewayClassName }}
+  listeners:
+  {{- toYaml .Values.global.gateway.listeners | nindent 2 }}
+{{- end }}

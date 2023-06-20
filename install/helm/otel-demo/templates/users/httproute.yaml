@@ -1,0 +1,21 @@
+{{- if and .Values.global.gateway.enabled .Values.users.httpRoute.enabled -}}
+kind: HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1beta1
+metadata:
+  name: {{ include "otel-demo.users.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  parentRefs:
+  - kind: Gateway
+    name: {{ include "otel-demo.fullname" . }}
+  hostnames:
+  {{- toYaml .Values.users.httpRoute.hostnames | nindent 2 }}
+  rules:
+  - matches:
+    - path:
+        value: /users
+        type: PathPrefix
+    backendRefs:
+    - name: {{ include "otel-demo.users.fullname" . }}
+      port: {{ .Values.users.service.port }}
+{{- end }}
