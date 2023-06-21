@@ -1,15 +1,21 @@
 package order
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
+
 	"github.com/toVersus/otel-demo/pkg/datastore"
 	"github.com/toVersus/otel-demo/pkg/utils"
+)
+
+const (
+	tracerName = "order"
 )
 
 type data struct {
@@ -65,23 +71,35 @@ func (s *Server) createOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := s.db.InsertOne(context.Background(), datastore.InsertParams{
-		Query: `insert into ORDERS(ACCOUNT, PRODUCT_NAME, PRICE, ORDER_STATUS) VALUES (?,?,?, ?)`,
+	ctx, insertSpan := otel.Tracer(tracerName).Start(r.Context(), "insert order")
+	id, err := s.db.InsertOne(ctx, datastore.InsertParams{
+		Query: `insert into ORDERS(ACCOUNT, PRODUCT_NAME, PRICE, ORDER_STATUS) VALUES (?,?,?,?)`,
 		Vars:  []interface{}{user.Account, request.ProductName, request.Price, "SUCCESS"},
 	})
 	if err != nil {
-		utils.WriteErrorResponse(w, http.StatusInternalServerError, err)
+		msg := "insert order error"
+		utils.WriteErrorResponse(w, http.StatusInternalServerError, fmt.Errorf("%s: %w", msg, err))
+		insertSpan.SetStatus(codes.Error, msg)
+		insertSpan.RecordError(err)
+		insertSpan.End()
 		return
 	}
+	insertSpan.End()
 
+	ctx, updateSpan := otel.Tracer(tracerName).Start(r.Context(), "update user amount")
 	// update the pending amount in user table
-	if err := s.db.UpdateOne(context.Background(), datastore.UpdateParams{
+	if err := s.db.UpdateOne(ctx, datastore.UpdateParams{
 		Query: `update USERS set AMOUNT = AMOUNT - ? where ID = ?`,
 		Vars:  []interface{}{request.Price, user.ID},
 	}); err != nil {
+		msg := "update user amount error"
 		utils.WriteErrorResponse(w, http.StatusInternalServerError, err)
+		updateSpan.SetStatus(codes.Error, msg)
+		updateSpan.RecordError(err)
+		updateSpan.End()
 		return
 	}
+	updateSpan.End()
 
 	// send response
 	response := request

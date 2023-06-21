@@ -9,6 +9,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/toVersus/otel-demo/pkg/payment"
+	"github.com/toVersus/otel-demo/pkg/telemetry"
 )
 
 var (
@@ -25,6 +26,16 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
+
+	tp, err := telemetry.Init("payment", "v0.1.0")
+	if err != nil {
+		log.Fatalf("Failed to initialize telemetry: %v", err)
+	}
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Fatalf("Failed to shutdown tracer provider: %v", err)
+		}
+	}()
 
 	svc, err := payment.New(paymentAddr, userUrl)
 	if err != nil {

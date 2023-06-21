@@ -7,8 +7,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/XSAM/otelsql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 const CREATE_USERS_TABLE = `CREATE TABLE IF NOT EXISTS USERS(
@@ -43,11 +45,18 @@ func New() (DB, error) {
 		dbName   = os.Getenv("SQL_DB")
 	)
 
-	db, err := sql.Open("mysql", datasourceName(username, password, host, ""))
+	db, err := otelsql.Open("mysql", datasourceName(username, password, host, ""))
 	if err != nil {
 		return nil, fmt.Errorf("open main db error: %w", err)
 	}
 	defer db.Close()
+
+	if err := otelsql.RegisterDBStatsMetrics(db, otelsql.WithAttributes(
+		semconv.DBSystemMySQL,
+	)); err != nil {
+		return nil, fmt.Errorf("register db stats metrics error: %w", err)
+	}
+
 	if _, err := db.Exec("CREATE DATABASE IF NOT EXISTS " + dbName); err != nil {
 		return nil, fmt.Errorf("db create error: %w", err)
 	}
