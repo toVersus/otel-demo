@@ -8,9 +8,9 @@ const TransferAmount = (props) => {
   return (
     <select onChange={props.handleTransferAmountChange}>
       <option selected>Choose amount</option>
-      <option value={999}>1000</option>
-      <option value={1100}>5000</option>
-      <option value={599}>10000</option>
+      <option value={1000}>1000</option>
+      <option value={5000}>5000</option>
+      <option value={10000}>10000</option>
     </select>
   )
 }
@@ -31,6 +31,7 @@ const App = () => {
   let [order, setOrder] = React.useState()
   let [amount, setAmount] = React.useState()
   let [product, setProduct] = React.useState()
+
   let createUser = async () => {
     try {
       const requestOptions = {
@@ -66,18 +67,19 @@ const App = () => {
   let handleAmount = (e) => {
     let { _, value } = e.target
     setAmount({
-      value: value,
+      value: Number(value),
     })
   }
 
   let transferFund = async () => {
     console.log('transferFund', user)
     console.log('amount', amount)
+    console.log(typeof amount.value)
     const requestOptions = {
       method: 'PUT',
 	  headers: { 'Content-Type': 'application/json' },
 	  body: JSON.stringify({
-	    amount: parseInt(amount.value),
+	    amount: amount.value,
 	  }),
     }
 
