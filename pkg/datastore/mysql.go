@@ -64,7 +64,7 @@ func New() (DB, error) {
 	// close the exising connection. db.Close() is idempotent. Hence, it is safe to close the db here.
 	db.Close()
 
-	db, err = sql.Open("mysql", datasourceName(username, password, host, dbName))
+	db, err = otelsql.Open("mysql", datasourceName(username, password, host, dbName))
 	if err != nil {
 		return nil, fmt.Errorf("open db error: %w", err)
 	}
