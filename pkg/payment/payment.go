@@ -8,6 +8,12 @@ import (
 	"net/http"
 
 	"github.com/toVersus/otel-demo/pkg/utils"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
+)
+
+const (
+	tracerName = "payment"
 )
 
 type data struct {
@@ -34,13 +40,19 @@ func (s *Server) transferAmount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx, span := otel.Tracer(tracerName).Start(r.Context(), "transfer amount")
 	// send the request to user service
 	url := fmt.Sprintf("%s/users/%s", s.userUrl, userID)
-	resp, err := utils.SendRequest(r.Context(), http.MethodPut, url, payload)
+	resp, err := utils.SendRequest(ctx, http.MethodPut, url, payload)
 	if err != nil {
-		utils.WriteErrorResponse(w, http.StatusInternalServerError, err)
+		msg := "transfer amount error"
+		utils.WriteErrorResponse(w, http.StatusInternalServerError, fmt.Errorf("%s: %w", msg, err))
+		span.SetStatus(codes.Error, msg)
+		span.RecordError(err)
+		span.End()
 		return
 	}
+	span.End()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

@@ -13,30 +13,23 @@ import (
 	"github.com/toVersus/otel-demo/pkg/telemetry"
 )
 
-var (
-	orderAddr, userUrl string
-)
-
 func main() {
 	// read the config from .env file
 	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
 		log.Fatal("Error loading .env file", err)
 	}
-	orderAddr = os.Getenv("ORDER_ADDR")
-	userUrl = os.Getenv("USER_URL")
+	orderAddr := os.Getenv("ORDER_ADDR")
+	userUrl := os.Getenv("USER_URL")
+	otlpAddr := os.Getenv("OTEL_ADDR")
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	tp, err := telemetry.Init("order", "v0.1.0")
+	closer, err := telemetry.InitTracer(ctx, otlpAddr, "order", "v0.1.0")
 	if err != nil {
-		log.Fatalf("Failed to initialize telemetry: %v", err)
+		log.Fatalf("Failed to initialize tracer: %v", err)
 	}
-	defer func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
-			log.Fatalf("Failed to shutdown tracer provider: %v", err)
-		}
-	}()
+	defer closer()
 
 	svc, err := order.New(orderAddr, userUrl)
 	if err != nil {
