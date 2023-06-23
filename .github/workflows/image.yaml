@@ -2,7 +2,7 @@ name: Image
 
 on:
   push:
-    branches: main
+    tag: v[0-9]+.[0-9]+.[0-9]+
 
 jobs:
   build-and-push:
@@ -26,7 +26,6 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
-        # platforms: linux/amd64,linux/arm64
         push: true
         tags: ghcr.io/toversus/otel-demo:frontend
         file: frontend/Dockerfile
@@ -36,7 +35,6 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
-        # platforms: linux/amd64,linux/arm64
         push: true
         tags: ghcr.io/toversus/otel-demo:backend
         cache-from: type=registry,ref=ghcr.io/toversus/otel-demo:backend

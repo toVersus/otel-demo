@@ -10,7 +10,7 @@ services:
     ports:
       - "3306:3306"
   frontend:
-    image: toversus/otel-demo:frontend
+    image: ghcr.io/toversus/otel-demo:frontend
     restart: unless-stopped
     ports:
       - "8088:80"
@@ -23,7 +23,7 @@ services:
       - payment
       - order
   user:
-    image: toversus/otel-demo:backend
+    image: ghcr.io/toversus/otel-demo:backend
     command: users
     restart: unless-stopped
     ports:
@@ -37,7 +37,7 @@ services:
     depends_on:
       - mysql
   payment:
-    image: toversus/otel-demo:backend
+    image: ghcr.io/toversus/otel-demo:backend
     command: payment
     restart: unless-stopped
     ports:
@@ -49,7 +49,7 @@ services:
     depends_on:
       - mysql
   order:
-    image: toversus/otel-demo:backend
+    image: ghcr.io/toversus/otel-demo:backend
     command: order
     restart: unless-stopped
     ports:
