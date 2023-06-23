@@ -17,7 +17,10 @@ import (
 )
 
 const (
-	tracerName = "order"
+	// アプリケーションやサービス名ではなく、実行モジュール (ライブラリ)
+	// の名前を指定する (e.g. GO だとパッケージ名)
+	// https://pkg.go.dev/go.opentelemetry.io/otel/trace#TracerProvider
+	tracerName = "github.com/toVersus/otel-demo/order"
 )
 
 type data struct {
@@ -43,7 +46,7 @@ func (s *Server) createOrder(w http.ResponseWriter, r *http.Request) {
 	ctx, getUserSpan := otel.Tracer(tracerName).Start(r.Context(), "get user")
 	// get user details from user service
 	url := fmt.Sprintf("%s/users/%d", s.userUrl, request.UserID)
-	userResponse, err := utils.SendRequest(r.Context(), http.MethodGet, url, nil)
+	userResponse, err := utils.SendRequest(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		log.Printf("%v", err)
 		utils.WriteResponse(w, http.StatusInternalServerError, err)
@@ -77,6 +80,7 @@ func (s *Server) createOrder(w http.ResponseWriter, r *http.Request) {
 
 	ctx, createOrderSpan := otel.Tracer(tracerName).Start(ctx, "create order",
 		trace.WithAttributes(attribute.String("user_id", fmt.Sprintf("%d", user.ID))),
+		trace.WithSpanKind(trace.SpanKindServer),
 	)
 	id, err := s.db.InsertOne(ctx, datastore.InsertParams{
 		Query: `insert into ORDERS(ACCOUNT, PRODUCT_NAME, PRICE, ORDER_STATUS) VALUES (?,?,?,?)`,

@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
+	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
 )
 
 func InitTracer(ctx context.Context, otlpAddr, serviceName, version string) (func(), error) {
@@ -27,7 +28,7 @@ func InitTracer(ctx context.Context, otlpAddr, serviceName, version string) (fun
 		trace.WithResource(newResource(serviceName, version)),
 	)
 
-	otel.SetTextMapPropagator(propagation.TraceContext{})
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	otel.SetTracerProvider(tp)
 
 	return func() {
@@ -59,15 +60,31 @@ func newExporter(ctx context.Context, otlpAddr string) (trace.SpanExporter, erro
 	return exporter, nil
 }
 
-func newResource(serviceName, version string) *resource.Resource {
-	r, _ := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceName(serviceName),
-			semconv.ServiceVersion(version),
-			attribute.String("environment", "demo"),
-		),
+func newResource(serviceName, version string) *sdkresource.Resource {
+	var (
+		newResourcesOnce sync.Once
+		resource         *sdkresource.Resource
 	)
-	return r
+
+	newResourcesOnce.Do(func() {
+		extraResources, _ := sdkresource.New(
+			context.Background(),
+			sdkresource.WithOS(),
+			sdkresource.WithProcess(),
+			sdkresource.WithContainer(),
+			sdkresource.WithHost(),
+			sdkresource.WithAttributes(
+				semconv.ServiceName(serviceName),
+				semconv.ServiceVersion(version),
+				attribute.String("environment", "demo"),
+			),
+		)
+
+		resource, _ = sdkresource.Merge(
+			sdkresource.Default(),
+			extraResources,
+		)
+
+	})
+	return resource
 }

@@ -7,11 +7,16 @@ import (
 	"github.com/toVersus/otel-demo/pkg/datastore"
 	"github.com/toVersus/otel-demo/pkg/utils"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
-	tracerName = "users"
+	// アプリケーションやサービス名ではなく、実行モジュール (ライブラリ)
+	// の名前を指定する (e.g. GO だとパッケージ名)
+	// https://pkg.go.dev/go.opentelemetry.io/otel/trace#TracerProvider
+	tracerName = "github.com/toVersus/otel-demo/order"
 )
 
 type user struct {
@@ -67,7 +72,8 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 	var u user
 
-	ctx, span := otel.Tracer(tracerName).Start(r.Context(), "get user")
+	ctx, span := otel.Tracer(tracerName).Start(r.Context(), "get user",
+		trace.WithAttributes(attribute.String("user_id", userID)))
 	defer span.End()
 	if err := s.db.SelectOne(ctx, datastore.SelectParams{
 		Query:   `select ID, USER_NAME, ACCOUNT, AMOUNT from USERS where ID = ?`,
@@ -80,6 +86,7 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) {
 		span.RecordError(err)
 		return
 	}
+	span.AddEvent("got user")
 
 	utils.WriteResponse(w, http.StatusOK, u)
 }

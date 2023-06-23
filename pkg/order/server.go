@@ -9,6 +9,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/toVersus/otel-demo/pkg/datastore"
 	"github.com/toVersus/otel-demo/pkg/utils"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type Server struct {
@@ -43,8 +44,11 @@ func (s *Server) Setup() {
 	})
 
 	srv := &http.Server{
-		Addr:    s.orderAddr,
-		Handler: c.Handler(router),
+		Addr: s.orderAddr,
+		Handler: otelhttp.NewHandler(
+			c.Handler(router), "orders",
+			otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
+		),
 	}
 	s.Server = srv
 }

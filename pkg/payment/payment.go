@@ -13,7 +13,10 @@ import (
 )
 
 const (
-	tracerName = "payment"
+	// アプリケーションやサービス名ではなく、実行モジュール (ライブラリ)
+	// の名前を指定する (e.g. GO だとパッケージ名)
+	// https://pkg.go.dev/go.opentelemetry.io/otel/trace#TracerProvider
+	tracerName = "github.com/toVersus/otel-demo/payment"
 )
 
 type data struct {
