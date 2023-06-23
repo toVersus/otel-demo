@@ -2,6 +2,8 @@
 
 Based on [SigNoz/distributed-tracing-golang-sample](https://github.com/SigNoz/distributed-tracing-golang-sample).
 
+![](./assets/imges/orders-tracing.png)
+
 ## Prerequisites
 
 - [OrbStack](https://docs.orbstack.dev/install)
