@@ -3,6 +3,10 @@ kind: Service
 metadata:
   name: {{ include "otel-demo.users.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  {{- if .Values.users.service.annotations }}
+  annotations:
+    {{- tpl (toYaml .Values.users.service.annotations) . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "otel-demo.users.labels" . | nindent 4 }}
 spec:

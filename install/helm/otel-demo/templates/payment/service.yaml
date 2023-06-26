@@ -3,6 +3,10 @@ kind: Service
 metadata:
   name: {{ include "otel-demo.payment.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  {{- if .Values.payment.service.annotations }}
+  annotations:
+    {{- tpl (toYaml .Values.payment.service.annotations) . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "otel-demo.payment.labels" . | nindent 4 }}
 spec:

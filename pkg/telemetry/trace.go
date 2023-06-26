@@ -14,10 +14,9 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
 )
 
-func InitTracer(ctx context.Context, otlpAddr, serviceName, version string) (func(), error) {
+func InitTracer(ctx context.Context, otlpAddr string) (func(), error) {
 	exporter, err := newExporter(ctx, otlpAddr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize exporter %v", err)
@@ -25,7 +24,7 @@ func InitTracer(ctx context.Context, otlpAddr, serviceName, version string) (fun
 
 	tp := trace.NewTracerProvider(
 		trace.WithBatcher(exporter),
-		trace.WithResource(newResource(serviceName, version)),
+		trace.WithResource(newResource()),
 	)
 
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
@@ -60,7 +59,7 @@ func newExporter(ctx context.Context, otlpAddr string) (trace.SpanExporter, erro
 	return exporter, nil
 }
 
-func newResource(serviceName, version string) *sdkresource.Resource {
+func newResource() *sdkresource.Resource {
 	var (
 		newResourcesOnce sync.Once
 		resource         *sdkresource.Resource
@@ -74,8 +73,6 @@ func newResource(serviceName, version string) *sdkresource.Resource {
 			sdkresource.WithContainer(),
 			sdkresource.WithHost(),
 			sdkresource.WithAttributes(
-				semconv.ServiceName(serviceName),
-				semconv.ServiceVersion(version),
 				attribute.String("environment", "demo"),
 			),
 		)

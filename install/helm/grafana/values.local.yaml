@@ -1,0 +1,36 @@
+service:
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "198.19.195.245"
+  type: LoadBalancer
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      uid: prometheus
+      access: proxy
+      orgId: 1
+      url: http://prometheus-server:9090
+      basicAuth: false
+      isDefault: false
+      version: 1
+      editable: false
+      jsonData:
+        httpMethod: GET
+    - name: Tempo
+      type: tempo
+      access: proxy
+      orgId: 1
+      url: http://tempo:3100
+      basicAuth: false
+      isDefault: true
+      version: 1
+      editable: false
+      apiVersion: 1
+      uid: tempo
+      jsonData:
+        httpMethod: GET
+        serviceMap:
+          datasourceUid: prometheus

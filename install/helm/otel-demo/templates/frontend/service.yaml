@@ -3,6 +3,10 @@ kind: Service
 metadata:
   name: {{ include "otel-demo.frontend.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  {{- if .Values.frontend.service.annotations }}
+  annotations:
+    {{- tpl (toYaml .Values.frontend.service.annotations) . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "otel-demo.frontend.labels" . | nindent 4 }}
 spec:

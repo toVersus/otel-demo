@@ -1,0 +1,42 @@
+rbac:
+  create: true
+
+serviceAccounts:
+  server:
+    create: true
+    name: ""
+
+server:
+  name: server
+  storagePath: "/data"
+
+  global:
+    scrape_interval: 1m
+    scrape_timeout: 10s
+    evaluation_interval: 1m
+
+  ingress:
+    enabled: false
+
+  startupProbe:
+    enabled: true
+
+  resources: {}
+
+  service:
+    enabled: true
+    annotations:
+      metallb.universe.tf/loadBalancerIPs: "198.19.195.246"
+    type: LoadBalancer
+
+alertmanager:
+  enabled: false
+
+kube-state-metrics:
+  enabled: false
+
+prometheus-node-exporter:
+  enabled: false
+
+prometheus-pushgateway:
+  enabled: false

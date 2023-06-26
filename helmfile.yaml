@@ -1,0 +1,83 @@
+environments:
+  local:
+    values:
+    - env: local
+  gke:
+    values:
+    - env: gke
+---
+helmDefaults:
+  skipDeps: true
+
+repositories:
+- name: grafana
+  url: https://grafana.github.io/helm-charts
+- name: opentelemetry-helm
+  url: https://open-telemetry.github.io/opentelemetry-helm-charts
+- name: prometheus-community
+  url: https://prometheus-community.github.io/helm-charts
+
+releases:
+- name: grafana
+  namespace: monitoring
+  chart: grafana/grafana
+  version: 6.57.3
+  # 環境毎のベースの values ファイルにクラスタ毎の values ファイルをマージして上書き可能にしている
+  values:
+  - install/helm/grafana/values.{{ .Values.env }}.yaml
+  # クラスタ単位で上書きする場合、values ファイルを以下の命名規則で配置すること
+  - install/helm/grafana/{{`{{ .Release.KubeContext }}`}}/{{`{{ .Release.Name }}`}}.{{`{{ .Release.Namespace }}`}}.yaml
+  # 2 つの values ファイルの片方もしくはどちらも使用しない場合があるので、
+  # ファイルがなくてもエラー終了しないように Warn を指定
+  missingFileHandler: Warn
+
+- name: opentelemetry-collector
+  namespace: monitoring
+  chart: opentelemetry-helm/opentelemetry-collector
+  version: 0.61.0
+  # 環境毎のベースの values ファイルにクラスタ毎の values ファイルをマージして上書き可能にしている
+  values:
+  - install/helm/opentelemetry-collector/values.{{ .Values.env }}.yaml
+  # クラスタ単位で上書きする場合、values ファイルを以下の命名規則で配置すること
+  - install/helm/opentelemetry-collector/{{`{{ .Release.KubeContext }}`}}/{{`{{ .Release.Name }}`}}.{{`{{ .Release.Namespace }}`}}.yaml
+  # 2 つの values ファイルの片方もしくはどちらも使用しない場合があるので、
+  # ファイルがなくてもエラー終了しないように Warn を指定
+  missingFileHandler: Warn
+
+- name: otel-demo
+  namespace: demo
+  chart: install/helm/otel-demo
+  # 環境毎のベースの values ファイルにクラスタ毎の values ファイルをマージして上書き可能にしている
+  values:
+  - install/helm/otel-demo/examples/values.{{ .Values.env }}.yaml
+  # クラスタ単位で上書きする場合、values ファイルを以下の命名規則で配置すること
+  - install/helm/otel-demo/examples/{{`{{ .Release.KubeContext }}`}}/{{`{{ .Release.Name }}`}}.{{`{{ .Release.Namespace }}`}}.yaml
+  # 2 つの values ファイルの片方もしくはどちらも使用しない場合があるので、
+  # ファイルがなくてもエラー終了しないように Warn を指定
+  missingFileHandler: Warn
+
+- name: prometheus
+  namespace: monitoring
+  chart: prometheus-community/prometheus
+  version: 22.6.6
+  # 環境毎のベースの values ファイルにクラスタ毎の values ファイルをマージして上書き可能にしている
+  values:
+  - install/helm/prometheus/values.{{ .Values.env }}.yaml
+  # クラスタ単位で上書きする場合、values ファイルを以下の命名規則で配置すること
+  - install/helm/prometheus/{{`{{ .Release.KubeContext }}`}}/{{`{{ .Release.Name }}`}}.{{`{{ .Release.Namespace }}`}}.yaml
+  # 2 つの values ファイルの片方もしくはどちらも使用しない場合があるので、
+  # ファイルがなくてもエラー終了しないように Warn を指定
+  missingFileHandler: Warn
+
+- name: tempo
+  namespace: monitoring
+  chart: grafana/tempo
+  version: 1.3.1
+  # 環境毎のベースの values ファイルにクラスタ毎の values ファイルをマージして上書き可能にしている
+  values:
+  - install/helm/tempo/values.{{ .Values.env }}.yaml
+  # クラスタ単位で上書きする場合、values ファイルを以下の命名規則で配置すること
+  - install/helm/tempo/{{`{{ .Release.KubeContext }}`}}/{{`{{ .Release.Name }}`}}.{{`{{ .Release.Namespace }}`}}.yaml
+  # 2 つの values ファイルの片方もしくはどちらも使用しない場合があるので、
+  # ファイルがなくてもエラー終了しないように Warn を指定
+  missingFileHandler: Warn

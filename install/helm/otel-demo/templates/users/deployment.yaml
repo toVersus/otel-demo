@@ -48,8 +48,10 @@ spec:
                   name: {{ .Release.Name}}-mysql
             - name: "USER_ADDR"
               value: "0.0.0.0:{{ .Values.users.service.port }}"
+            - name: OTEL_SERVICE_NAME
+              value: users
           {{- with (concat .Values.global.env .Values.users.extraEnv) }}
-            {{- toYaml . | nindent 12 }}
+            {{- tpl ( toYaml . ) $ | nindent 12 }}
           {{- end }}
           ports:
             - name: http

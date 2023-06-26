@@ -1,0 +1,23 @@
+# Valid values are "daemonset", "deployment", and "statefulset".
+mode: "deployment"
+
+presets:
+  kubernetesAttributes:
+    enabled: true
+
+config:
+  exporters:
+    otlp:
+      endpoint: tempo:4317
+      tls:
+        insecure: true
+  service:
+    pipelines:
+      traces:
+        receivers: [otlp]
+        exporters: [otlp]
+
+resources:
+  limits:
+    cpu: 256m
+    memory: 512Mi

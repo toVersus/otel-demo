@@ -33,6 +33,14 @@ order:
     hostnames:
     - otel-demo.3-shake.com
 
+  extraEnv:
+  - name: "SQL_USER"
+    value: "root"
+  - name: "SQL_HOST"
+    value: "otel-demo-mysql-headless:3306"
+  - name: "SQL_DB"
+    value: "demo"
+
   backendPolicy:
     enabled: true
     securityPolicy: ngsw-otel-demo
@@ -58,6 +66,14 @@ users:
     enabled: true
     hostnames:
     - otel-demo.3-shake.com
+
+  extraEnv:
+  - name: "SQL_USER"
+    value: "root"
+  - name: "SQL_HOST"
+    value: "otel-demo-mysql-headless:3306"
+  - name: "SQL_DB"
+    value: "demo"
 
   backendPolicy:
     enabled: true

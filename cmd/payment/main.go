@@ -24,7 +24,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	closer, err := telemetry.InitTracer(ctx, otlpAddr, "payment", "v0.1.0")
+	closer, err := telemetry.InitTracer(ctx, otlpAddr)
 	if err != nil {
 		log.Fatalf("Failed to initialize tracer: %v", err)
 	}

@@ -34,6 +34,8 @@ services:
       - SQL_HOST=mysql:3306
       - SQL_DB=demo
       - OTEL_ADDR=otel-collector:4317
+      - OTEL_SERVICE_NAME=users
+      - OTEL_RESOURCE_ATTRIBUTES=service.version=v0.1.0
     depends_on:
       - mysql
   payment:
@@ -46,6 +48,8 @@ services:
       - USER_URL=http://user:8080
       - PAYMENT_ADDR=0.0.0.0:8081
       - OTEL_ADDR=otel-collector:4317
+      - OTEL_SERVICE_NAME=payment
+      - OTEL_RESOURCE_ATTRIBUTES=service.version=v0.1.0
     depends_on:
       - mysql
   order:
@@ -61,6 +65,8 @@ services:
       - SQL_HOST=mysql:3306
       - SQL_DB=demo
       - OTEL_ADDR=otel-collector:4317
+      - OTEL_SERVICE_NAME=order
+      - OTEL_RESOURCE_ATTRIBUTES=service.version=v0.1.0
     depends_on:
       - mysql
 

@@ -1,0 +1,79 @@
+global:
+  env:
+  - name: OTEL_ADDR
+    value: opentelemetry-collector.monitoring:4317
+
+frontend:
+  address: 198.19.195.240
+
+  # metallb で公開
+  service:
+    # https://metallb.universe.tf/usage/#requesting-specific-ips
+    annotations:
+      metallb.universe.tf/loadBalancerIPs: "{{ .Values.frontend.address }}"
+    type: LoadBalancer
+
+  # metallb で公開される IP に置き換える
+  orderUrl: "http://{{ .Values.order.address }}:{{ .Values.order.service.port }}"
+  paymentUrl: "http://{{ .Values.payment.address }}:{{ .Values.payment.service.port }}"
+  usersUrl: "http://{{ .Values.users.address }}:{{ .Values.users.service.port }}"
+
+order:
+  address: 198.19.195.241
+
+  image:
+    pullPolicy: IfNotPresent
+  service:
+    # https://metallb.universe.tf/usage/#requesting-specific-ips
+    annotations:
+      metallb.universe.tf/loadBalancerIPs: "{{ .Values.order.address }}"
+    type: LoadBalancer
+  extraEnv:
+  - name: "SQL_USER"
+    value: "root"
+  - name: "SQL_HOST"
+    value: "otel-demo-mysql-headless:3306"
+  - name: "SQL_DB"
+    value: "demo"
+  - name: OTEL_SERVICE_NAME
+    value: order
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "service.version={{ .Chart.AppVersion }}"
+
+payment:
+  address: 198.19.195.242
+
+  image:
+    pullPolicy: IfNotPresent
+  service:
+    # https://metallb.universe.tf/usage/#requesting-specific-ips
+    annotations:
+      metallb.universe.tf/loadBalancerIPs: "{{ .Values.payment.address }}"
+    type: LoadBalancer
+  extraEnv:
+  - name: OTEL_SERVICE_NAME
+    value: payment
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "service.version={{ .Chart.AppVersion }}"
+
+users:
+  address: 198.19.195.243
+
+  image:
+    pullPolicy: IfNotPresent
+  service:
+    # https://metallb.universe.tf/usage/#requesting-specific-ips
+    annotations:
+      metallb.universe.tf/loadBalancerIPs: "{{ .Values.users.address }}"
+    type: LoadBalancer
+  extraEnv:
+  - name: "SQL_USER"
+    value: "root"
+  - name: "SQL_HOST"
+    value: "otel-demo-mysql-headless:3306"
+  - name: "SQL_DB"
+    value: "demo"
+  - name: OTEL_SERVICE_NAME
+    value: users
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "service.version={{ .Chart.AppVersion }}"

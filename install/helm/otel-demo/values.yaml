@@ -59,6 +59,7 @@ frontend:
   # runAsUser: 1000
 
   service:
+    annotations: {}
     type: ClusterIP
     port: 8088
 
@@ -118,13 +119,7 @@ order:
 
   extraArgs: []
   # -- Environment variables to pass to the ApplicationSet controller
-  extraEnv:
-  - name: "SQL_USER"
-    value: "root"
-  - name: "SQL_HOST"
-    value: "otel-demo-mysql-headless:3306"
-  - name: "SQL_DB"
-    value: "demo"
+  extraEnv: []
 
   serviceAccount:
     # Specifies whether a service account should be created
@@ -149,6 +144,7 @@ order:
     runAsUser: 1000
 
   service:
+    annotations: {}
     type: ClusterIP
     port: 8082
 
@@ -233,6 +229,7 @@ payment:
     runAsUser: 1000
 
   service:
+    annotations: {}
     type: ClusterIP
     port: 8081
 
@@ -323,6 +320,7 @@ users:
     runAsUser: 1000
 
   service:
+    annotations: {}
     type: ClusterIP
     port: 8080
 

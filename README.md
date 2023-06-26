@@ -30,6 +30,12 @@ Based on [SigNoz/distributed-tracing-golang-sample](https://github.com/SigNoz/di
   brew install helm
   ```
 
+- [Helmfile](https://helmfile.readthedocs.io/en/latest/#installation)
+
+  ```sh
+  brew install helmfile
+  ```
+
 ## Docker Compose
 
 ```sh
@@ -51,7 +57,7 @@ docker network inspect -f '{{.IPAM.Config}}' kind
 
 # Configure IP address pool
 #
-# e.g.) .spec.addresses => 198.19.195.250-198.19.195.255
+# e.g.) .spec.addresses => 198.19.195.240-198.19.195.255
 # ❯ docker network inspect -f '{{.IPAM.Config}}' kind
 # [{198.19.194.0/23  198.19.194.1 map[]} {fc00:f853:ccd:e793::/64   map[]}]
 cat << EOF | kubectl apply -f -
@@ -62,7 +68,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - 198.19.195.250-198.19.195.255
+  - 198.19.195.240-198.19.195.255
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
@@ -70,10 +76,17 @@ metadata:
   name: empty
   namespace: metallb-system
 EOF
+# Replacing IP address specified in install/helm/otel-demo/examples/values.local.yaml
 
 kind load docker-image ghcr.io/toversus/otel-demo:frontend
 kind load docker-image ghcr.io/toversus/otel-demo:backend
 
-helm upgrade --install --create-namespace otel-demo \
-  -f ./install/helm/otel-demo/examples/values.kind.yaml ./install/helm/otel-demo/
+helmfile sync --environment local .
+
+# Frontend URL: http://198.19.195.240:8088/
+
+# Grafana URL: http://198.19.195.245
+# Grafana admin user: admin
+# Grafana admin password
+kubectl get secret -n monitoring grafana -ojsonpath='{.data.admin-password}' | base64 -d
 ```

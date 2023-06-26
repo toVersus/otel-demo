@@ -46,12 +46,14 @@ spec:
                 secretKeyRef:
                   key: mysql-root-password
                   name: {{ .Release.Name}}-mysql
-            - name: "ORDER_ADDR"
+            - name: ORDER_ADDR
               value: "0.0.0.0:{{ .Values.order.service.port }}"
-            - name: "USER_URL"
+            - name: USER_URL
               value: "http://{{ include "otel-demo.users.name" . }}:{{ .Values.users.service.port }}"
+            - name: OTEL_SERVICE_NAME
+              value: order
           {{- with (concat .Values.global.env .Values.order.extraEnv) }}
-            {{- toYaml . | nindent 12 }}
+            {{- tpl ( toYaml . ) $ | nindent 12 }}
           {{- end }}
           ports:
             - name: http

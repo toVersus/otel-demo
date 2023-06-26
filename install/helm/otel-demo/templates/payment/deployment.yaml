@@ -45,8 +45,10 @@ spec:
               value: "0.0.0.0:{{ .Values.payment.service.port }}"
             - name: "USER_URL"
               value: "http://{{ include "otel-demo.users.name" . }}:{{ .Values.users.service.port }}"
+            - name: OTEL_SERVICE_NAME
+              value: payment
           {{- with (concat .Values.global.env .Values.payment.extraEnv) }}
-            {{- toYaml . | nindent 12 }}
+            {{- tpl ( toYaml . ) $ | nindent 12 }}
           {{- end }}
           ports:
             - name: http
