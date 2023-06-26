@@ -86,7 +86,4 @@ helmfile sync --environment local .
 # Frontend URL: http://198.19.195.240:8088/
 
 # Grafana URL: http://198.19.195.245
-# Grafana admin user: admin
-# Grafana admin password
-kubectl get secret -n monitoring grafana -ojsonpath='{.data.admin-password}' | base64 -d
 ```
