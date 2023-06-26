@@ -7,6 +7,8 @@ import (
 
 	"github.com/rs/cors"
 	"github.com/toVersus/otel-demo/pkg/utils"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/filters"
 )
 
 type Server struct {
@@ -33,8 +35,15 @@ func (s *Server) Setup() {
 	})
 
 	srv := &http.Server{
-		Addr:    s.paymentAddr,
-		Handler: c.Handler(router),
+		Addr: s.paymentAddr,
+		Handler: otelhttp.NewHandler(
+			c.Handler(router), "payment",
+			otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
+			// Ignore healthz endpoint from tracing
+			otelhttp.WithFilter(filters.All(
+				filters.Not(filters.Path("/healthz")),
+			)),
+		),
 	}
 	s.Server = srv
 }
