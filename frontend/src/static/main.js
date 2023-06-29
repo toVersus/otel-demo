@@ -8,9 +8,9 @@ const TransferAmount = (props) => {
   return (
     <select onChange={props.handleTransferAmountChange}>
       <option selected>Choose amount</option>
-      <option value={1000}>1000</option>
-      <option value={5000}>5000</option>
-      <option value={10000}>10000</option>
+      <option value={500}>500</option>
+      <option value={800}>800</option>
+      <option value={1500}>1500</option>
     </select>
   )
 }
@@ -18,9 +18,9 @@ const ProductDD = (props) => {
   return (
     <select onChange={props.handleProductChange}>
       <option selected>Choose product</option>
+      <option value={599}>Mac Mini</option>
       <option value={999}>MacBook Air</option>
       <option value={1100}>MacBook Pro</option>
-      <option value={599}>Mac Mini</option>
     </select>
   )
 }
@@ -42,7 +42,7 @@ const App = () => {
           account: 'savings',
         }),
       }
-      let userServiceUrl='/users';
+      let userServiceUrl = '/users';
       if (typeof USER_URL !== 'undefined') {
         userServiceUrl = USER_URL + userServiceUrl
       }
@@ -77,13 +77,13 @@ const App = () => {
     console.log(typeof amount.value)
     const requestOptions = {
       method: 'PUT',
-	  headers: { 'Content-Type': 'application/json' },
-	  body: JSON.stringify({
-	    amount: amount.value,
-	  }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: amount.value,
+      }),
     }
 
-    let paymentServiceUrl=`/payments/transfer/id/${user.id}`;
+    let paymentServiceUrl = `/payments/transfer/id/${user.id}`;
     if (typeof PAYMENT_URL !== 'undefined') {
       paymentServiceUrl = PAYMENT_URL + paymentServiceUrl
     }
@@ -109,7 +109,7 @@ const App = () => {
       }),
     }
 
-    let orderServiceUrl='/orders';
+    let orderServiceUrl = '/orders';
     if (typeof ORDER_URL !== 'undefined') {
       orderServiceUrl = ORDER_URL + orderServiceUrl
     }
@@ -136,8 +136,8 @@ const App = () => {
       {user && (
         <div>
           <Title label="2. Transfer amount"></Title>
-          <TransferAmount handleTransferAmountChange={handleAmount}/>
-          {amount &&<button onClick={transferFund}>Transfer Fund</button>}
+          <TransferAmount handleTransferAmountChange={handleAmount} />
+          {amount && <button onClick={transferFund}>Transfer Fund</button>}
           <Response result={payment} />
         </div>
       )}
