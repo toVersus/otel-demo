@@ -4,6 +4,8 @@ Based on [SigNoz/distributed-tracing-golang-sample](https://github.com/SigNoz/di
 
 ![](./assets/imges/orders-tracing.png)
 
+![](./assets/imges/service-graph.png)
+
 ## Prerequisites
 
 - [OrbStack](https://docs.orbstack.dev/install)
@@ -86,4 +88,9 @@ helmfile sync --environment local .
 # Frontend URL: http://198.19.195.240:8088/
 
 # Grafana URL: http://198.19.195.245
+```
+
+
+```
+histogram_quantile(0.95, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le, service, span_name))
 ```
