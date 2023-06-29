@@ -30,6 +30,9 @@ func main() {
 	}
 	defer closer()
 
+	srv := telemetry.SetupMetricsExporter()
+	go telemetry.ServeMetrics(srv)
+
 	svc, err := payment.New(paymentAddr, userUrl)
 	if err != nil {
 		log.Fatalf("Failed to initialize payment service: %v", err)

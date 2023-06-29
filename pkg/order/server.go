@@ -61,6 +61,6 @@ func (s *Server) Setup() {
 func (s *Server) Run() {
 	log.Printf("Order service running at: %s", s.orderAddr)
 	if err := s.Server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-		log.Fatalf("failed to setup http server: %v", err)
+		log.Fatalf("failed to run metrics server: %v", err)
 	}
 }

@@ -9,3 +9,9 @@ scrape_configs:
   - job_name: 'tempo'
     static_configs:
       - targets: [ 'tempo:3200' ]
+  - job_name: 'otel-demo'
+    static_configs:
+      - targets:
+        - 'order:2223'
+        - 'payment:2223'
+        - 'user:2223'

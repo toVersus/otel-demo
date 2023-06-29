@@ -13,6 +13,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/toVersus/otel-demo/pkg/datastore"
+	"github.com/toVersus/otel-demo/pkg/telemetry"
 	"github.com/toVersus/otel-demo/pkg/utils"
 )
 
@@ -75,6 +76,9 @@ func (s *Server) createOrder(w http.ResponseWriter, r *http.Request) {
 	// basic check for the user balance
 	if user.Amount < request.Price {
 		utils.WriteErrorResponse(w, http.StatusUnprocessableEntity, fmt.Errorf("insufficient balance. add %d more amount to account", request.Price-user.Amount))
+		if err := telemetry.RecordCount(telemetry.ErrorCount, "order"); err != nil {
+			log.Printf("failed to record request count: %v", err)
+		}
 		return
 	}
 

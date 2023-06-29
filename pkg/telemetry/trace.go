@@ -5,19 +5,16 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
-	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 func InitTracer(ctx context.Context, otlpAddr string) (func(), error) {
-	exporter, err := newExporter(ctx, otlpAddr)
+	exporter, err := newTraceExporter(ctx, otlpAddr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize exporter %v", err)
 	}
@@ -37,7 +34,7 @@ func InitTracer(ctx context.Context, otlpAddr string) (func(), error) {
 	}, nil
 }
 
-func newExporter(ctx context.Context, otlpAddr string) (trace.SpanExporter, error) {
+func newTraceExporter(ctx context.Context, otlpAddr string) (trace.SpanExporter, error) {
 	var err error
 	var exporter trace.SpanExporter
 
@@ -57,31 +54,4 @@ func newExporter(ctx context.Context, otlpAddr string) (trace.SpanExporter, erro
 	}
 
 	return exporter, nil
-}
-
-func newResource() *sdkresource.Resource {
-	var (
-		newResourcesOnce sync.Once
-		resource         *sdkresource.Resource
-	)
-
-	newResourcesOnce.Do(func() {
-		extraResources, _ := sdkresource.New(
-			context.Background(),
-			sdkresource.WithOS(),
-			sdkresource.WithProcess(),
-			sdkresource.WithContainer(),
-			sdkresource.WithHost(),
-			sdkresource.WithAttributes(
-				attribute.String("environment", "demo"),
-			),
-		)
-
-		resource, _ = sdkresource.Merge(
-			sdkresource.Default(),
-			extraResources,
-		)
-
-	})
-	return resource
 }

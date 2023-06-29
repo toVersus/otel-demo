@@ -31,6 +31,10 @@ func main() {
 	}
 	defer closer()
 
+	telemetry.InitMetricProvider()
+	srv := telemetry.SetupMetricsExporter()
+	go telemetry.ServeMetrics(srv)
+
 	svc, err := order.New(orderAddr, userUrl)
 	if err != nil {
 		log.Fatalf("Failed to initialize order service: %v", err)
