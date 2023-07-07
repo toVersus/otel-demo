@@ -6,6 +6,8 @@ Based on [SigNoz/distributed-tracing-golang-sample](https://github.com/SigNoz/di
 
 ![](./assets/imges/service-graph.png)
 
+![](./assets/imges/trace-exemplars.png)
+
 ## Prerequisites
 
 - [OrbStack](https://docs.orbstack.dev/install)

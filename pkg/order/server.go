@@ -8,6 +8,7 @@ import (
 
 	"github.com/rs/cors"
 	"github.com/toVersus/otel-demo/pkg/datastore"
+	"github.com/toVersus/otel-demo/pkg/telemetry"
 	"github.com/toVersus/otel-demo/pkg/utils"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/filters"
@@ -37,7 +38,7 @@ func New(orderAddr, userUrl string) (*Server, error) {
 
 func (s *Server) Setup() {
 	router := http.NewServeMux()
-	router.Handle("/orders", utils.LoggingMW(http.HandlerFunc(s.createOrder)))
+	router.Handle("/orders", utils.LoggingMW(telemetry.RequestMW("order", http.HandlerFunc(s.createOrder))))
 	router.Handle("/healthz", utils.Healthz())
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},

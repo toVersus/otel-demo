@@ -6,14 +6,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/prometheus"
-	api "go.opentelemetry.io/otel/metric"
+	promexporter "go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -21,29 +20,34 @@ const (
 	metricsPrefix = "oteldemo"
 )
 
-type CMetric int
-
-const (
-	ErrorCount CMetric = CMetric(iota)
-)
-
-type counterMetric struct {
-	metricName    string
-	metricDesc    string
-	counter       api.Int64Counter
-	createCounter *sync.Once
-}
-
-var counterMetricMap = map[CMetric]*counterMetric{
-	ErrorCount: {metricsPrefix + "_errors", "Total number of errors made", nil, &errorCounterOnce},
-}
-
 var (
-	errorCounterOnce sync.Once
+	httpInFlightRequests = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "http_requests_in_flight",
+		Help: "A gauge of requests currently being served by the wrapped handler.",
+	})
+
+	httpRequestsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "http_requests_total",
+		Help: "Count of all HTTP requests",
+	}, []string{"handler", "code", "method"})
+
+	httpRequestDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name: "http_request_duration_seconds",
+		Help: "Duration of all HTTP requests",
+	}, []string{"handler", "code", "method"})
+
+	responseSize = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "response_size_bytes",
+			Help:    "A histogram of response sizes for requests.",
+			Buckets: []float64{200, 500, 900, 1500},
+		},
+		[]string{},
+	)
 )
 
 func InitMetricProvider() {
-	exporter, err := prometheus.New()
+	exporter, err := promexporter.New()
 	if err != nil {
 		log.Fatalf("failed to initialize prometheus exporter: %s", err)
 	}
@@ -58,8 +62,21 @@ func InitMetricProvider() {
 }
 
 func SetupMetricsExporter() *http.Server {
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(
+		httpInFlightRequests,
+		httpRequestsTotal,
+		httpRequestDuration,
+		responseSize,
+	)
+
 	router := http.NewServeMux()
-	router.Handle("/metrics", promhttp.Handler())
+	router.Handle("/metrics", promhttp.HandlerFor(
+		registry,
+		promhttp.HandlerOpts{
+			EnableOpenMetrics: true,
+		},
+	))
 	return &http.Server{
 		Addr:    ":2223",
 		Handler: router,
@@ -74,32 +91,28 @@ func ServeMetrics(srv *http.Server) {
 	}
 }
 
-func GetCounter(name CMetric) (api.Int64Counter, error) {
-	counterMetric, ok := counterMetricMap[name]
-	if !ok {
-		return nil, errors.New("counter not exists")
-	}
-	counterMetric.createCounter.Do(func() {
-		meter := otel.Meter(meterName)
-		counterMetric.counter, _ = meter.Int64Counter(counterMetric.metricName,
-			api.WithDescription(counterMetric.metricDesc),
-		)
-	})
-	if counterMetric.counter != nil {
-		return counterMetric.counter, nil
-	}
-	return nil, errors.New("counter metric not ready")
-}
-
-func RecordCount(name CMetric, service string) error {
-	ctx := context.Background()
-	counter, err := GetCounter(name)
-	if err != nil {
-		return err
+func RequestMW(name string, handler http.HandlerFunc) http.Handler {
+	getExemplarFn := func(ctx context.Context) prometheus.Labels {
+		if spanCtx := trace.SpanContextFromContext(ctx); spanCtx.IsSampled() {
+			return prometheus.Labels{"TraceID": spanCtx.TraceID().String()}
+		}
+		return nil
 	}
 
-	counter.Add(ctx, 1, api.WithAttributes(
-		attribute.Key("service").String(service),
-	))
-	return nil
+	return promhttp.InstrumentHandlerInFlight(
+		httpInFlightRequests,
+		promhttp.InstrumentHandlerDuration(
+			httpRequestDuration.MustCurryWith(prometheus.Labels{"handler": name}),
+			promhttp.InstrumentHandlerCounter(
+				httpRequestsTotal.MustCurryWith(prometheus.Labels{"handler": name}),
+				promhttp.InstrumentHandlerResponseSize(
+					responseSize,
+					handler,
+					promhttp.WithExemplarFromContext(getExemplarFn),
+				),
+				promhttp.WithExemplarFromContext(getExemplarFn),
+			),
+			promhttp.WithExemplarFromContext(getExemplarFn),
+		),
+	)
 }
