@@ -1,5 +1,5 @@
 # use a minimal alpine image
-FROM cgr.dev/chainguard/go:1.20.5 AS builder
+FROM cgr.dev/chainguard/go@sha256:8ed3fdc8f6375a3fd84b4b8b696a2366c3a639931aab492d6f92ca917e726ad6 AS builder
 
 ARG TARGETOS=linux TARGETARCH=amd64
 
