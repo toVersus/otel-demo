@@ -1,0 +1,33 @@
+{
+    "name": "golang",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "forwardPorts": [
+        3000,
+        3200,
+        8080,
+        8081,
+        8082,
+        8088,
+        9090
+    ],
+    "customizations": {
+        "settings": {
+            "terminal.integrated.shell.linux": "/bin/bash",
+            "terminal.integrated.fontFamily": "Menlo, Monaco, 'Courier New', monospace",
+            "terminal.integrated.fontSize": 3,
+            "terminal.integrated.letterSpacing": 1
+        },
+        "vscode": {
+            "extensions": [
+                "golang.go",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    }
+}
